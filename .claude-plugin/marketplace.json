@@ -8,7 +8,7 @@
       "name": "api-billing-toggle",
       "source": "./plugins/api-billing-toggle",
       "description": "Switch Claude Code billing on/off without ever putting the API key in plaintext.",
-      "version": "1.0.0"
+      "version": "1.0.1"
     }
   ]
 }

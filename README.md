@@ -108,6 +108,39 @@ jq 'has("apiKeyHelper"), (.env | (.ANTHROPIC_API_KEY != null))' ~/.claude/settin
 
 Both `false` → subscription billing. Both `true` → API-key billing.
 
+## Troubleshooting
+
+### `Please run /login · API Error: 401 Invalid authentication credentials`
+
+This is **Claude Code's auth path failing** — not a script error. It happens when the API key in `settings.json` has been revoked (commonly: you rotated the key in the Anthropic Console but haven't updated Keychain). Claude Code can't even reach the API, so it can't invoke this skill from inside a Claude session.
+
+**Fix from your terminal (not from inside Claude):**
+
+```bash
+# 1. Strip the dead key out of settings.json
+~/.claude/skills/api-billing-toggle/scripts/off.sh
+
+# 2. Quit Claude Code (Cmd-Q), reopen, run /login to authenticate with your subscription
+```
+
+If you want to keep using API-key billing, store the new (rotated) key first, then run on.sh:
+
+```bash
+security add-generic-password -s 'claude-code-api-key' -a 'anthropic' \
+  -w 'sk-ant-api03-NEW-KEY-HERE' -U
+~/.claude/skills/api-billing-toggle/scripts/on.sh
+```
+
+**Why the error message is misleading:** Claude Code's 401 handler suggests `/login`, which is the right fix for subscription users — but if your goal was to stop using a revoked API key, you need to clear it from settings.json first (what `off.sh` does). Otherwise `/login` succeeds but Claude still tries to use the dead key on the next session.
+
+### Restarted Claude Code, still seeing the old billing mode
+
+Closing the window isn't enough on macOS — Claude Code keeps running in the background. Quit with **Cmd-Q** (or `pkill -f "Claude Code"` from terminal) and relaunch.
+
+### `No API key found in macOS Keychain`
+
+The on script's first run on a new machine will print this. Store the key as shown in [One-time setup](#one-time-setup), then re-run `on.sh`. The script does not modify `settings.json` when the key is missing — safe to retry.
+
 ## Requirements
 
 - **macOS** (the Keychain integration is macOS-only — `security` CLI)
@@ -140,6 +173,7 @@ macOS Keychain is the cheapest way to get encryption-at-rest with no extra depen
 
 ## Version history
 
+- **v1.0.1** (2026-04-27) — Friendlier script output: explicit confirmation, list of what changed, next-step instructions, and 401 troubleshooting tip in `off.sh` for already-off case. Added Troubleshooting section to README covering the common "401 after key rotation" scenario.
 - **v1.0.0** (2026-04-27) — Initial release. on/off scripts, SKILL.md with natural-language triggers, slash command templates.
 
 ## License
