@@ -30,11 +30,11 @@ if [[ "$HAD_HELPER" == "false" && "$HAD_ENV_KEY" == "false" ]]; then
   cat <<EOF
 ✓ API-key billing was already OFF (nothing to change)
 
-Your ~/.claude/settings.json has no apiKeyHelper or ANTHROPIC_API_KEY,
-so Claude Code will use your Pro/Max subscription for billing.
+Your ~/.claude/settings.json has no apiKeyHelper or ANTHROPIC_API_KEY.
+Claude Code will use your Pro/Max subscription on next launch.
 
-If Claude Code is showing a 401 / "Invalid authentication credentials"
-error, run /login inside Claude Code to re-authenticate.
+If Claude Code 401s on the next prompt, that's expected — just run
+/login to authenticate with your subscription account.
 EOF
 else
   cat <<EOF
@@ -46,14 +46,15 @@ EOF
   [[ "$HAD_ENV_KEY" == "true" ]]  && echo "  • Removed env.ANTHROPIC_API_KEY"
   cat <<EOF
 
-Future Claude Code sessions will use your Pro/Max subscription for billing.
 Your API key is still safe in macOS Keychain — run on.sh to switch back.
 
 What to do next:
   1. Quit Claude Code completely (Cmd-Q — closing the window is not enough)
   2. Reopen Claude Code
-  3. If you see a 401 / "Invalid authentication credentials" error,
-     run /login to authenticate with your Pro/Max account
+  3. Run /login to authenticate with your Pro/Max account
+     (Claude Code will likely 401 on the first prompt — this is expected,
+      because there is no API key in settings.json anymore. Just run /login
+      and you're done.)
 
 Verify (in a new terminal):
   jq '{apiKeyHelper, env}' ~/.claude/settings.json

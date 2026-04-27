@@ -110,28 +110,36 @@ Both `false` → subscription billing. Both `true` → API-key billing.
 
 ## Troubleshooting
 
-### `Please run /login · API Error: 401 Invalid authentication credentials`
+### `Please run /login · API Error: 401 Invalid authentication credentials` after running `off.sh`
 
-This is **Claude Code's auth path failing** — not a script error. It happens when the API key in `settings.json` has been revoked (commonly: you rotated the key in the Anthropic Console but haven't updated Keychain). Claude Code can't even reach the API, so it can't invoke this skill from inside a Claude session.
+**This is the expected next step, not an error.** When `off.sh` removes `apiKeyHelper` and `env.ANTHROPIC_API_KEY` from `settings.json`, there is no auth left for Claude Code to use. The next prompt 401s and Claude Code's own handler asks you to `/login` — which is exactly what you want to do to authenticate with your Pro/Max subscription.
 
-**Fix from your terminal (not from inside Claude):**
+**Just run `/login` and you're done.** No need to re-run the skill.
 
-```bash
-# 1. Strip the dead key out of settings.json
-~/.claude/skills/api-billing-toggle/scripts/off.sh
+The flow looks like this:
 
-# 2. Quit Claude Code (Cmd-Q), reopen, run /login to authenticate with your subscription
+```
+You:    [run off.sh in terminal, quit Cmd-Q, reopen Claude Code]
+You:    switch to subscription
+Claude: Please run /login · API Error: 401 …       ← expected
+You:    /login
+Claude: Login successful                            ← now on Pro/Max
 ```
 
-If you want to keep using API-key billing, store the new (rotated) key first, then run on.sh:
+### Same error but you didn't intend to switch
+
+If the 401 appears unexpectedly (e.g. after rotating your Anthropic API key in the Console without updating Keychain), the dead key is still in `settings.json`. Two ways to fix:
 
 ```bash
+# Switch to subscription:
+~/.claude/skills/api-billing-toggle/scripts/off.sh
+# then /login inside Claude Code
+
+# Stay on API billing with the new key:
 security add-generic-password -s 'claude-code-api-key' -a 'anthropic' \
   -w 'sk-ant-api03-NEW-KEY-HERE' -U
 ~/.claude/skills/api-billing-toggle/scripts/on.sh
 ```
-
-**Why the error message is misleading:** Claude Code's 401 handler suggests `/login`, which is the right fix for subscription users — but if your goal was to stop using a revoked API key, you need to clear it from settings.json first (what `off.sh` does). Otherwise `/login` succeeds but Claude still tries to use the dead key on the next session.
 
 ### Restarted Claude Code, still seeing the old billing mode
 
@@ -173,6 +181,7 @@ macOS Keychain is the cheapest way to get encryption-at-rest with no extra depen
 
 ## Version history
 
+- **v1.0.2** (2026-04-27) — Corrected the framing of the post-`off.sh` 401: it's the expected next step (Claude Code asking for `/login`), not an error. Updated `off.sh` output and README troubleshooting to make this clear. Tested with real-world walkthrough.
 - **v1.0.1** (2026-04-27) — Friendlier script output: explicit confirmation, list of what changed, next-step instructions, and 401 troubleshooting tip in `off.sh` for already-off case. Added Troubleshooting section to README covering the common "401 after key rotation" scenario.
 - **v1.0.0** (2026-04-27) — Initial release. on/off scripts, SKILL.md with natural-language triggers, slash command templates.
 
