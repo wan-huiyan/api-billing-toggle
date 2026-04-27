@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "wan-huiyan-api-billing-toggle",
+  "description": "Toggle Claude Code between Anthropic API-key billing and Pro/Max subscription, with the key safely stored in macOS Keychain.",
+  "owner": { "name": "wan-huiyan" },
+  "plugins": [
+    {
+      "name": "api-billing-toggle",
+      "source": "./plugins/api-billing-toggle",
+      "description": "Switch Claude Code billing on/off without ever putting the API key in plaintext.",
+      "version": "1.0.0"
+    }
+  ]
+}
